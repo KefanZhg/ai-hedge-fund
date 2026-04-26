@@ -106,6 +106,16 @@ def select_model(use_ollama: bool, model_flag: str | None = None) -> tuple[str, 
     model_name: str = ""
     model_provider: str | None = None
 
+    if use_ollama and model_flag:
+        print(f"{Fore.CYAN}Using Ollama for local LLM inference.{Style.RESET_ALL}")
+        print(
+            f"\nUsing specified model: {Fore.CYAN}Ollama{Style.RESET_ALL} - {Fore.GREEN + Style.BRIGHT}{model_flag}{Style.RESET_ALL}\n"
+        )
+        if not ensure_ollama_and_model(model_flag):
+            print(f"{Fore.RED}Cannot proceed without Ollama and the selected model.{Style.RESET_ALL}")
+            sys.exit(1)
+        return model_flag, ModelProvider.OLLAMA.value
+
     if model_flag:
         model = find_model_by_name(model_flag)
         if model:
@@ -284,5 +294,3 @@ def parse_cli_inputs(
         show_agent_graph=getattr(args, "show_agent_graph", False),
         raw_args=args,
     )
-
-

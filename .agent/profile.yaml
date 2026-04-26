@@ -1,0 +1,22 @@
+profile:
+  name: hardware-software-repo-agent
+  default_mode: implementation
+  safety_level: strict
+  domains:
+    - firmware_c
+    - software_python
+    - software_matlab
+    - software_cpp
+    - fpga_rtl
+    - pcb
+    - mechanical
+    - lab_automation
+  writable_paths:
+    - src/
+    - scripts/
+    - docs/
+    - tests/
+  protected_paths:
+    - production/
+    - release/
+    - manufacturing/

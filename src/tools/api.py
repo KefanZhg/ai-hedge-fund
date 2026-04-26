@@ -7,6 +7,9 @@ import time
 
 logger = logging.getLogger(__name__)
 
+# Keep outbound financial API calls bounded so the pipeline doesn't hang indefinitely on network issues.
+REQUEST_TIMEOUT_SECONDS = 15
+
 from src.data.cache import get_cache
 from src.data.models import (
     CompanyNews,
@@ -44,10 +47,18 @@ def _make_api_request(url: str, headers: dict, method: str = "GET", json_data: d
         Exception: If the request fails with a non-429 error
     """
     for attempt in range(max_retries + 1):  # +1 for initial attempt
-        if method.upper() == "POST":
-            response = requests.post(url, headers=headers, json=json_data)
-        else:
-            response = requests.get(url, headers=headers)
+        try:
+            if method.upper() == "POST":
+                response = requests.post(url, headers=headers, json=json_data, timeout=REQUEST_TIMEOUT_SECONDS)
+            else:
+                response = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT_SECONDS)
+        except requests.RequestException as e:
+            if attempt < max_retries:
+                delay = min(2 ** attempt, 8)
+                logger.warning("Request failed (%s). Retrying in %ss: %s", type(e).__name__, delay, url)
+                time.sleep(delay)
+                continue
+            raise
         
         if response.status_code == 429 and attempt < max_retries:
             # Linear backoff: 60s, 90s, 120s, 150s...

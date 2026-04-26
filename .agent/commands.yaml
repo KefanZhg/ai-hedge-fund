@@ -1,0 +1,22 @@
+commands:
+  check:
+    description: Run default quality checks
+    run:
+      - ./scripts/check_all.sh
+  build:
+    description: Build project artifacts (non-destructive)
+    run:
+      - echo "Define project build commands here"
+  test:
+    description: Run unit and simulation tests
+    run:
+      - echo "Define project test commands here"
+
+forbidden_patterns:
+  - "openocd"
+  - "esptool"
+  - "dfu-util"
+  - "bossac"
+  - "vivado -mode tcl -source program"
+  - "quartus_pgm"
+  - "pyvisa.*write"
